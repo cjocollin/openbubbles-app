@@ -110,7 +110,7 @@ class _TroubleshootPanelState extends OptimizedState<TroubleshootPanel> {
                                             borderRadius:
                                                 BorderRadius.circular(25),
                                             color: context
-                                                .theme.colorScheme.background,
+                                                .theme.colorScheme.surface,
                                           ),
                                           padding: const EdgeInsets.all(10),
                                           child: Obx(() => ListView.builder(
@@ -125,7 +125,7 @@ class _TroubleshootPanelState extends OptimizedState<TroubleshootPanel> {
                                                       color: context
                                                           .theme
                                                           .colorScheme
-                                                          .onBackground,
+                                                          .onSurface,
                                                       fontSize: 10,
                                                     ),
                                                   );

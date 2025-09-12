@@ -6,10 +6,10 @@ import 'package:bluebubbles/helpers/helpers.dart';
 import 'package:bluebubbles/app/layouts/conversation_list/pages/conversation_list.dart';
 import 'package:bluebubbles/app/layouts/conversation_list/widgets/tile/cupertino_conversation_tile.dart';
 import 'package:bluebubbles/app/layouts/conversation_list/widgets/tile/material_conversation_tile.dart';
+import 'package:bluebubbles/app/layouts/conversation_list/widgets/tile/expressive_conversation_tile.dart';
 import 'package:bluebubbles/app/layouts/conversation_list/widgets/tile/samsung_conversation_tile.dart';
 import 'package:bluebubbles/app/layouts/conversation_view/pages/conversation_view.dart';
 import 'package:bluebubbles/app/components/avatars/contact_avatar_group_widget.dart';
-import 'package:bluebubbles/app/wrappers/theme_switcher.dart';
 import 'package:bluebubbles/app/wrappers/stateful_boilerplate.dart';
 import 'package:bluebubbles/database/database.dart';
 import 'package:bluebubbles/database/models.dart';
@@ -252,21 +252,20 @@ class _ConversationTileState extends CustomState<ConversationTile, void, Convers
       onEnter: (event) => controller.hoverHighlight.value = true,
       onExit: (event) => controller.hoverHighlight.value = false,
       cursor: SystemMouseCursors.click,
-      child: ThemeSwitcher(
-        iOSSkin: CupertinoConversationTile(
-          parentController: controller,
-          deletedMode: widget.deletedMode,
-        ),
-        materialSkin: MaterialConversationTile(
-          parentController: controller,
-          deletedMode: widget.deletedMode,
-        ),
-        samsungSkin: SamsungConversationTile(
-          parentController: controller,
-          deletedMode: widget.deletedMode,
-        ),
-      ),
+      child: Obx(() {
+        switch (ss.settings.skin.value) {
+          case Skins.iOS:
+            return CupertinoConversationTile(parentController: controller, deletedMode: widget.deletedMode);
+          case Skins.Material:
+            return MaterialConversationTile(parentController: controller, deletedMode: widget.deletedMode);
+          case Skins.Samsung:
+            return SamsungConversationTile(parentController: controller, deletedMode: widget.deletedMode);
+          default:
+            return ExpressiveConversationTile(parentController: controller, deletedMode: widget.deletedMode);
+        }
+      }),
     );
+
   }
 }
 

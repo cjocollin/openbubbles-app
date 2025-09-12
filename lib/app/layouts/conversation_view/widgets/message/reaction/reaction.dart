@@ -139,7 +139,7 @@ class ReactionWidgetState extends OptimizedState<ReactionWidget> {
         height: 30,
         decoration: BoxDecoration(
           color: reactionIsFromMe ? context.theme.colorScheme.primary : context.theme.colorScheme.properSurface,
-          border: Border.all(color: context.theme.colorScheme.background),
+          border: Border.all(color: context.theme.colorScheme.surface),
           shape: BoxShape.circle,
         ),
         child: GestureDetector(
@@ -245,7 +245,7 @@ class ReactionWidgetState extends OptimizedState<ReactionWidget> {
             child: Container(
               width: iosSize + 2,
               height: iosSize + 2,
-              color: context.theme.colorScheme.background,
+              color: context.theme.colorScheme.surface,
             ),
           ),
         ),

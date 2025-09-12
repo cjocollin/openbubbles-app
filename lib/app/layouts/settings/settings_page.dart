@@ -42,6 +42,10 @@ import 'package:get/get.dart' hide Response;
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:universal_io/io.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:bluebubbles/app/layouts/settings/widgets/expressive_settings_tile.dart';
+import 'package:bluebubbles/app/layouts/settings/widgets/server_connection_tile.dart';
+import 'package:bluebubbles/widgets/expressive_card.dart';
+import 'package:bluebubbles/app/layouts/setup/setup_view.dart';
 
 class SettingsPage extends StatefulWidget {
   SettingsPage({
@@ -97,7 +101,7 @@ class _SettingsPageState extends OptimizedState<SettingsPage> {
       value: SystemUiOverlayStyle(
         systemNavigationBarColor: ss.settings.immersiveMode.value
             ? Colors.transparent
-            : context.theme.colorScheme.background, // navigation bar color
+            : context.theme.colorScheme.surface, // navigation bar color
         systemNavigationBarIconBrightness:
             context.theme.colorScheme.brightness.opposite,
         statusBarColor: Colors.transparent, // status bar color
@@ -109,7 +113,7 @@ class _SettingsPageState extends OptimizedState<SettingsPage> {
           },
           child: Obx(() => Container(
                 color:
-                    context.theme.colorScheme.background.themeOpacity(context),
+                    context.theme.colorScheme.surface.themeOpacity(context),
                 child: TabletModeWrapper(
                   initialRatio: 0.4,
                   minRatio: kIsDesktop || kIsWeb ? 0.2 : 0.33,
@@ -124,1156 +128,283 @@ class _SettingsPageState extends OptimizedState<SettingsPage> {
                       tileColor: tileColor,
                       headerColor: headerColor,
                       bodySlivers: [
-                        SliverList(
-                          delegate: SliverChildListDelegate(
-                            <Widget>[
-                              if (!kIsWeb && !iOS)
-                                SettingsSection(
-                                  backgroundColor: tileColor,
-                                  children: [
-                                    SettingsTile(
-                                      backgroundColor: tileColor,
-                                      title: ss.settings.redactedMode.value &&
-                                              ss.settings.hideContactInfo.value
-                                          ? "User Name"
-                                          : ss.settings.userName.value,
-                                      subtitle: "Tap to view more details",
-                                      onTap: () {
-                                        ns.pushAndRemoveSettingsUntil(
-                                          context,
-                                          ProfilePanel(),
-                                          (route) => route.isFirst,
-                                        );
-                                      },
-                                      leading: ContactAvatarWidget(
+                        if (!kIsWeb && !iOS)
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 8),
+                              child: ExpressiveCard(
+                                onTap: () {
+                                  ns.pushAndRemoveSettingsUntil(
+                                    context,
+                                    ProfilePanel(),
+                                    (route) => route.isFirst,
+                                  );
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Row(
+                                    children: [
+                                      ContactAvatarWidget(
                                         handle: null,
                                         borderThickness: 0.1,
                                         editable: false,
                                         fontSize: 22,
                                         size: 50,
                                       ),
-                                      trailing: const NextButton(),
-                                    ),
-                                  ],
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              ss.settings.redactedMode.value && ss.settings.hideContactInfo.value
+                                                  ? "User Name"
+                                                  : ss.settings.userName.value,
+                                              style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                                            ),
+                                            Text(
+                                              "Tap to view profile",
+                                              style: context.textTheme.bodySmall,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const Icon(Icons.arrow_forward_ios, size: 16),
+                                    ],
+                                  ),
                                 ),
-                              if (!kIsWeb && backend.getRemoteService() != null)
-                                SettingsHeader(
-                                    iosSubtitle: iosSubtitle,
-                                    materialSubtitle: materialSubtitle,
-                                    text: "Server & Message Management"),
-                              if (backend.getRemoteService() != null)
-                              SettingsSection(
-                                backgroundColor: tileColor,
-                                children: [
-                                  Obx(() {
-                                    String? subtitle;
-                                    switch (socket.state.value) {
-                                      case SocketState.connected:
-                                        subtitle = "Connected";
-                                        break;
-                                      case SocketState.disconnected:
-                                        subtitle = "Disconnected";
-                                        break;
-                                      case SocketState.error:
-                                        subtitle = "Error";
-                                        break;
-                                      case SocketState.connecting:
-                                        subtitle = "Connecting";
-                                        break;
-                                      default:
-                                        subtitle = "Error";
-                                        break;
-                                    }
-
-                                    return SettingsTile(
-                                      backgroundColor: tileColor,
-                                      title: "Connection & Server",
-                                      onTap: () async {
-                                        ns.pushAndRemoveSettingsUntil(
-                                          context,
-                                          ServerManagementPanel(),
-                                          (route) => route.isFirst,
-                                        );
-                                      },
-                                      onLongPress: () {
-                                        Clipboard.setData(
-                                            ClipboardData(text: http.origin));
-                                        if (!Platform.isAndroid ||
-                                            (fs.androidInfo?.version.sdkInt ??
-                                                    0) <
-                                                33) {
-                                          showSnackbar("Copied",
-                                              "Server address copied to clipboard!");
-                                        }
-                                      },
-                                      leading: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Material(
-                                            shape: samsung
-                                                ? SquircleBorder(
-                                                    side: BorderSide(
-                                                        color:
-                                                            getIndicatorColor(
-                                                                socket.state
-                                                                    .value),
-                                                        width: 3.0),
-                                                  )
-                                                : null,
-                                            color: ss.settings.skin.value !=
-                                                    Skins.Material
-                                                ? getIndicatorColor(
-                                                    socket.state.value)
-                                                : Colors.transparent,
-                                            borderRadius: iOS
-                                                ? BorderRadius.circular(6)
-                                                : null,
-                                            child: SizedBox(
-                                              width: 30,
-                                              height: 30,
-                                              child: Stack(
-                                                  alignment: Alignment.center,
-                                                  children: [
-                                                    Icon(
-                                                      iOS
-                                                          ? CupertinoIcons
-                                                              .antenna_radiowaves_left_right
-                                                          : Icons.router,
-                                                      color: ss.settings.skin
-                                                                  .value !=
-                                                              Skins.Material
-                                                          ? Colors.white
-                                                          : Colors.grey,
-                                                      size: ss.settings.skin
-                                                                  .value !=
-                                                              Skins.Material
-                                                          ? 21
-                                                          : 28,
-                                                    ),
-                                                    if (material)
-                                                      Positioned.fill(
-                                                        child: Align(
-                                                            alignment: Alignment
-                                                                .bottomRight,
-                                                            child:
-                                                                getIndicatorIcon(
-                                                                    socket.state
-                                                                        .value,
-                                                                    size: 12,
-                                                                    showAlpha:
-                                                                        false)),
-                                                      ),
-                                                  ]),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            subtitle,
-                                            style: context.theme.textTheme.bodyMedium!.apply(color: context.theme.colorScheme.outline.withOpacity(0.85)),
-                                          ),
-                                          const SizedBox(width: 5),
-                                          const NextButton(),
-                                        ]
-                                      )
+                              ),
+                            ),
+                          ),
+                        if (backend.getRemoteService() != null)
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                              child: SizedBox(
+                                height: 200,
+                                child: ServerConnectionTile(
+                                  onTap: () {
+                                    ns.pushAndRemoveSettingsUntil(
+                                      context,
+                                      ServerManagementPanel(),
+                                      (route) => route.isFirst,
                                     );
-                                  }),
-                                  if (ss.serverDetailsSync().item4 >= 205)
-                                    const SettingsDivider(),
-                                  if (ss.serverDetailsSync().item4 >= 205)
-                                    SettingsTile(
-                                      backgroundColor: tileColor,
-                                      title: "Scheduled Messages",
-                                      onTap: () {
-                                        ns.pushAndRemoveSettingsUntil(
-                                          context,
-                                          ScheduledMessagesPanel(),
-                                          (route) => route.isFirst,
-                                        );
-                                      },
-                                      trailing: const NextButton(),
-                                      leading: const SettingsLeadingIcon(
-                                        iosIcon: CupertinoIcons.calendar,
-                                        materialIcon:
-                                            Icons.schedule_send_outlined,
-                                        containerColor: Colors.redAccent,
-                                      ),
-                                    ),
-                                  if (Platform.isAndroid)
-                                    const SettingsDivider(),
-                                  if (Platform.isAndroid)
-                                    SettingsTile(
-                                      backgroundColor: tileColor,
-                                      title: "Message Reminders",
-                                      onTap: () {
-                                        ns.pushAndRemoveSettingsUntil(
-                                          context,
-                                          MessageRemindersPanel(),
-                                          (route) => route.isFirst,
-                                        );
-                                      },
-                                      trailing: const NextButton(),
-                                      leading: const SettingsLeadingIcon(
-                                        iosIcon: CupertinoIcons.alarm_fill,
-                                        materialIcon: Icons.alarm,
-                                        containerColor: Colors.blueAccent,
-                                      ),
-                                    ),
-                                ],
+                                  },
+                                ),
                               ),
-
-                              if (!kIsWeb && usingRustPush)
-                                SettingsHeader(
-                                    iosSubtitle: iosSubtitle,
-                                    materialSubtitle: materialSubtitle,
-                                    text: "Device"),
+                            ),
+                          ),
+                        SliverPadding(
+                          padding: const EdgeInsets.all(16),
+                          sliver: SliverGrid.count(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 16,
+                            crossAxisSpacing: 16,
+                            children: [
+                              ExpressiveSettingsTile(
+                                title: "Appearance",
+                                subtitle: "Theme, Skin, Colors",
+                                icon: Icons.palette,
+                                color: Colors.blue,
+                                onTap: () => ns.pushAndRemoveSettingsUntil(context, ThemingPanel(), (route) => route.isFirst),
+                              ),
+                              ExpressiveSettingsTile(
+                                title: "Media",
+                                subtitle: "Photos, Videos, Audio",
+                                icon: Icons.perm_media,
+                                color: Colors.purple,
+                                onTap: () => ns.pushAndRemoveSettingsUntil(context, AttachmentPanel(), (route) => route.isFirst),
+                              ),
+                              ExpressiveSettingsTile(
+                                title: "Notifications",
+                                subtitle: "Alerts, Sounds",
+                                icon: Icons.notifications,
+                                color: Colors.red,
+                                onTap: () => ns.pushAndRemoveSettingsUntil(context, NotificationPanel(), (route) => route.isFirst),
+                              ),
+                              ExpressiveSettingsTile(
+                                title: "Chat List",
+                                subtitle: "Sorting, Layout",
+                                icon: Icons.list,
+                                color: Colors.green,
+                                onTap: () => ns.pushAndRemoveSettingsUntil(context, ChatListPanel(), (route) => route.isFirst),
+                              ),
+                              ExpressiveSettingsTile(
+                                title: "Conversation",
+                                subtitle: "Bubbles, Effects",
+                                icon: Icons.sms,
+                                color: Colors.orange,
+                                onTap: () => ns.pushAndRemoveSettingsUntil(context, ConversationPanel(), (route) => route.isFirst),
+                              ),
+                              if (kIsDesktop)
+                                ExpressiveSettingsTile(
+                                  title: "Desktop",
+                                  subtitle: "Window, System Tray",
+                                  icon: Icons.desktop_windows,
+                                  color: Colors.blueGrey,
+                                  onTap: () => ns.pushAndRemoveSettingsUntil(context, DesktopPanel(), (route) => route.isFirst),
+                                ),
+                              ExpressiveSettingsTile(
+                                title: "More",
+                                subtitle: "Misc Settings",
+                                icon: Icons.more_horiz,
+                                color: Colors.teal,
+                                onTap: () => ns.pushAndRemoveSettingsUntil(context, MiscPanel(), (route) => route.isFirst),
+                              ),
+                              if (ss.serverDetailsSync().item4 >= 205)
+                                ExpressiveSettingsTile(
+                                  title: "Scheduled",
+                                  subtitle: "Scheduled Messages",
+                                  icon: Icons.schedule_send,
+                                  color: Colors.pink,
+                                  onTap: () => ns.pushAndRemoveSettingsUntil(context, ScheduledMessagesPanel(), (route) => route.isFirst),
+                                ),
+                              if (Platform.isAndroid)
+                                ExpressiveSettingsTile(
+                                  title: "Reminders",
+                                  subtitle: "Message Reminders",
+                                  icon: Icons.alarm,
+                                  color: Colors.indigo,
+                                  onTap: () => ns.pushAndRemoveSettingsUntil(context, MessageRemindersPanel(), (route) => route.isFirst),
+                                ),
                               if (usingRustPush)
-                              SettingsSection(
-                                backgroundColor: tileColor,
-                                children: [
-                                  Obx(() {
-
-                                    return Skeletonizer(
-                                      enabled: deviceInfo == null,
-                                      child: SettingsTile(
-                                        backgroundColor: tileColor,
-                                        title: ss.settings.deviceIsHosted.value ? "Hosted Device" : deviceInfo == null ? null : RustPushBBUtils.modelToUser(deviceInfo!.name),
-                                        subtitle: ss.settings.redactedMode.value ? "Serial Number" : deviceInfo?.serial,
-                                        onTap: () {
-                                          ns.pushAndRemoveSettingsUntil(
-                                            context,
-                                            DevicePanel(),
-                                                (route) => route.isFirst,
-                                          );
-                                        },
-                                        trailing: const NextButton(),
-                                        leading: const SettingsLeadingIcon(
-                                          iosIcon: CupertinoIcons.device_laptop,
-                                          materialIcon: Icons.laptop,
-                                          containerColor: Colors.indigoAccent,
-                                        ),
-                                      ));
-                                  }),
-                                  if (ss.serverDetailsSync().item4 >= 205)
-                                    const SettingsDivider(),
-                                  if (ss.serverDetailsSync().item4 >= 205)
-                                    SettingsTile(
-                                      backgroundColor: tileColor,
-                                      title: "Scheduled Messages",
-                                      onTap: () {
-                                        ns.pushAndRemoveSettingsUntil(
-                                          context,
-                                          ScheduledMessagesPanel(),
-                                          (route) => route.isFirst,
-                                        );
-                                      },
-                                      trailing: const NextButton(),
-                                      leading: const SettingsLeadingIcon(
-                                        iosIcon: CupertinoIcons.calendar,
-                                        materialIcon:
-                                            Icons.schedule_send_outlined,
-                                        containerColor: Colors.redAccent,
-                                      ),
-                                    ),
-                                  if (Platform.isAndroid)
-                                    const SettingsDivider(),
-                                  if (Platform.isAndroid)
-                                    SettingsTile(
-                                      backgroundColor: tileColor,
-                                      title: "Message Reminders",
-                                      onTap: () {
-                                        ns.pushAndRemoveSettingsUntil(
-                                          context,
-                                          MessageRemindersPanel(),
-                                          (route) => route.isFirst,
-                                        );
-                                      },
-                                      trailing: const NextButton(),
-                                      leading: const SettingsLeadingIcon(
-                                        iosIcon: CupertinoIcons.alarm_fill,
-                                        materialIcon: Icons.alarm,
-                                        containerColor: Colors.blueAccent,
-                                      ),
-                                    ),
-                                ],
+                                ExpressiveSettingsTile(
+                                  title: "Device",
+                                  subtitle: "Hosted Device Info",
+                                  icon: Icons.laptop,
+                                  color: Colors.deepPurple,
+                                  onTap: () => ns.pushAndRemoveSettingsUntil(context, DevicePanel(), (route) => route.isFirst),
+                                ),
+                              // Advanced
+                              ExpressiveSettingsTile(
+                                title: "Private API",
+                                subtitle: "Advanced Features",
+                                icon: Icons.security,
+                                color: Colors.amber,
+                                onTap: () => ns.pushAndRemoveSettingsUntil(context, PrivateAPIPanel(), (route) => route.isFirst),
                               ),
-
-
-
-                              SettingsHeader(
-                                  iosSubtitle: iosSubtitle,
-                                  materialSubtitle: materialSubtitle,
-                                  text: "Appearance"),
-                              SettingsSection(
-                                backgroundColor: tileColor,
-                                children: [
-                                  SettingsTile(
-                                    backgroundColor: tileColor,
-                                    title: "Appearance Settings",
-                                    onTap: () {
-                                      ns.pushAndRemoveSettingsUntil(
-                                        context,
-                                        ThemingPanel(),
-                                        (route) => route.isFirst,
-                                      );
-                                    },
-                                    trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            "${ss.settings.skin.value.toString().split(".").last}  |  ${AdaptiveTheme.of(context).mode.toString().split(".").last.capitalizeFirst!}",
-                                            style: context.theme.textTheme.bodyMedium!.apply(color: context.theme.colorScheme.outline.withOpacity(0.85)),
-                                          ),
-                                          const SizedBox(width: 5),
-                                          const NextButton(),
-                                        ]
-                                      ),
-                                    leading: const SettingsLeadingIcon(
-                                        iosIcon: CupertinoIcons.paintbrush_fill,
-                                        materialIcon: Icons.palette,
-                                        containerColor: Colors.blueGrey),
-                                  ),
-                                ],
+                              ExpressiveSettingsTile(
+                                title: "Redacted Mode",
+                                subtitle: "Hide Sensitive Info",
+                                icon: Icons.visibility_off,
+                                color: Colors.deepOrange,
+                                onTap: () => ns.pushAndRemoveSettingsUntil(context, RedactedModePanel(), (route) => route.isFirst),
                               ),
-                              SettingsHeader(
-                                  iosSubtitle: iosSubtitle,
-                                  materialSubtitle: materialSubtitle,
-                                  text: "Application Settings"),
-                              SettingsSection(
-                                backgroundColor: tileColor,
-                                children: [
-                                  SettingsTile(
-                                    backgroundColor: tileColor,
-                                    title: "Media Settings",
-                                    onTap: () {
-                                      ns.pushAndRemoveSettingsUntil(
-                                        context,
-                                        AttachmentPanel(),
-                                        (route) => route.isFirst,
-                                      );
-                                    },
-                                    leading: const SettingsLeadingIcon(
-                                        iosIcon: CupertinoIcons.photo_fill,
-                                        materialIcon: Icons.attachment,
-                                        iconSize: 18,
-                                        containerColor:
-                                            Colors.deepPurpleAccent),
-                                    trailing: const NextButton(),
-                                  ),
-                                  const SettingsDivider(),
-                                  SettingsTile(
-                                    backgroundColor: tileColor,
-                                    title: "Notification Settings",
-                                    onTap: () {
-                                      ns.pushAndRemoveSettingsUntil(
-                                        context,
-                                        NotificationPanel(),
-                                        (route) => route.isFirst,
-                                      );
-                                    },
-                                    leading: const SettingsLeadingIcon(
-                                      iosIcon: CupertinoIcons.bell_fill,
-                                      materialIcon: Icons.notifications_on,
-                                      containerColor: Colors.redAccent,
-                                    ),
-                                    trailing: const NextButton(),
-                                  ),
-                                  const SettingsDivider(),
-                                  SettingsTile(
-                                    backgroundColor: tileColor,
-                                    title: "Chat List Settings",
-                                    onTap: () {
-                                      ns.pushAndRemoveSettingsUntil(
-                                        context,
-                                        ChatListPanel(),
-                                        (route) => route.isFirst,
-                                      );
-                                    },
-                                    leading: const SettingsLeadingIcon(
-                                      iosIcon: CupertinoIcons.square_list_fill,
-                                      materialIcon: Icons.list,
-                                      containerColor: Colors.blueAccent,
-                                    ),
-                                    trailing: const NextButton(),
-                                  ),
-                                  const SettingsDivider(),
-                                  SettingsTile(
-                                    backgroundColor: tileColor,
-                                    title: "Conversation Settings",
-                                    onTap: () {
-                                      ns.pushAndRemoveSettingsUntil(
-                                        context,
-                                        ConversationPanel(),
-                                        (route) => route.isFirst,
-                                      );
-                                    },
-                                    leading: const SettingsLeadingIcon(
-                                      iosIcon: CupertinoIcons.chat_bubble_fill,
-                                      materialIcon: Icons.sms,
-                                      containerColor: Colors.green,
-                                    ),
-                                    trailing: const NextButton(),
-                                  ),
-                                  const SettingsDivider(),
-                                  if (kIsDesktop)
-                                    SettingsTile(
-                                      backgroundColor: tileColor,
-                                      title: "Desktop Settings",
-                                      onTap: () {
-                                        ns.pushAndRemoveSettingsUntil(
-                                          context,
-                                          DesktopPanel(),
-                                          (route) => route.isFirst,
-                                        );
-                                      },
-                                      leading: const SettingsLeadingIcon(
-                                        iosIcon: CupertinoIcons.desktopcomputer,
-                                        materialIcon: Icons.desktop_windows,
-                                      ),
-                                      trailing: const NextButton(),
-                                    ),
-                                  if (kIsDesktop)
-                                    const SettingsDivider(),
-                                  SettingsTile(
-                                    backgroundColor: tileColor,
-                                    title: "More Settings",
-                                    onTap: () {
-                                      ns.pushAndRemoveSettingsUntil(
-                                        context,
-                                        MiscPanel(),
-                                        (route) => route.isFirst,
-                                      );
-                                    },
-                                    leading: const SettingsLeadingIcon(
-                                      iosIcon: CupertinoIcons.ellipsis_circle_fill,
-                                      materialIcon: Icons.more_vert,
-                                    ),
-                                    trailing: const NextButton(),
-                                  ),
-                                ],
+                              if (Platform.isAndroid)
+                                ExpressiveSettingsTile(
+                                  title: "Tasker",
+                                  subtitle: "Automation",
+                                  icon: Icons.bolt,
+                                  color: Colors.yellow[800]!,
+                                  onTap: () => ns.pushAndRemoveSettingsUntil(context, TaskerPanel(), (route) => route.isFirst),
+                                ),
+                              ExpressiveSettingsTile(
+                                title: "Troubleshoot",
+                                subtitle: "Logs & Tools",
+                                icon: Icons.build,
+                                color: Colors.brown,
+                                onTap: () => ns.pushAndRemoveSettingsUntil(context, TroubleshootPanel(), (route) => route.isFirst),
                               ),
-                              SettingsHeader(
-                                  iosSubtitle: iosSubtitle,
-                                  materialSubtitle: materialSubtitle,
-                                  text: "Advanced"),
-                              SettingsSection(
-                                backgroundColor: tileColor,
-                                children: [
-                                  if (!usingRustPush)
-                                  Obx(() => SettingsTile(
-                                        backgroundColor: tileColor,
-                                        title: "Private API Features",
-                                        trailing: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Text(
-                                              ss.settings.enablePrivateAPI.value ? ss.settings.serverPrivateAPI.value == false ? "Not Set Up" : "Enabled" : "Disabled",
-                                              style: context.theme.textTheme.bodyMedium!.apply(color: context.theme.colorScheme.outline.withOpacity(0.85)),
-                                            ),
-                                            const SizedBox(width: 5),
-                                            const NextButton(),
-                                          ]
-                                        ),
-                                        onTap: () async {
-                                          ns.pushAndRemoveSettingsUntil(
-                                            context,
-                                            PrivateAPIPanel(),
-                                            (route) => route.isFirst,
-                                          );
-                                        },
-                                        leading: SettingsLeadingIcon(
-                                          iosIcon: CupertinoIcons
-                                              .exclamationmark_shield_fill,
-                                          materialIcon: Icons.gpp_maybe,
-                                          containerColor:
-                                              ss.settings.enablePrivateAPI.value
-                                                  ? ss.settings.serverPrivateAPI
-                                                              .value ==
-                                                          false
-                                                      ? Colors.redAccent
-                                                      : Colors.green
-                                                  : Colors.amber,
-                                        ),
-                                      )),
-                                  if (!usingRustPush)
-                                  const SettingsDivider(),
-                                  Obx(() => SettingsTile(
-                                        backgroundColor: tileColor,
-                                        title: "Redacted Mode",
-                                        trailing: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Text(
-                                              ss.settings.redactedMode.value ? "Enabled" : "Disabled",
-                                              style: context.theme.textTheme.bodyMedium!.apply(color: context.theme.colorScheme.outline.withOpacity(0.85)),
-                                            ),
-                                            const SizedBox(width: 5),
-                                            const NextButton(),
-                                          ]
-                                        ),
-                                        onTap: () async {
-                                          ns.pushAndRemoveSettingsUntil(
-                                            context,
-                                            RedactedModePanel(),
-                                            (route) => route.isFirst,
-                                          );
-                                        },
-                                        leading: SettingsLeadingIcon(
-                                          iosIcon: CupertinoIcons.wand_stars,
-                                          materialIcon: Icons.auto_fix_high,
-                                          containerColor:
-                                              ss.settings.redactedMode.value
-                                                  ? Colors.green
-                                                  : Colors.redAccent,
-                                        ),
-                                      )),
-                                  if (Platform.isAndroid)
-                                    const SettingsDivider(),
-                                  if (Platform.isAndroid)
-                                    SettingsTile(
-                                      backgroundColor: tileColor,
-                                      title: "Tasker Integration",
-                                      trailing: const NextButton(),
-                                      onTap: () async {
-                                        ns.pushAndRemoveSettingsUntil(
-                                          context,
-                                          TaskerPanel(),
-                                          (route) => route.isFirst,
-                                        );
-                                      },
-                                      leading: const SettingsLeadingIcon(
-                                          iosIcon: CupertinoIcons.bolt_fill,
-                                          materialIcon:
-                                              Icons.electric_bolt_outlined,
-                                          containerColor: Colors.orangeAccent),
-                                    ),
-                                  if (!usingRustPush)
-                                  const SettingsDivider(),
-                                  if (!usingRustPush)
-                                  SettingsTile(
-                                      backgroundColor: tileColor,
-                                      title: "Notification Providers",
-                                      trailing: const NextButton(),
-                                      onTap: () async {
-                                        ns.pushAndRemoveSettingsUntil(
-                                            context,
-                                            NotificationProvidersPanel(),
-                                            (route) => route.isFirst);
-                                      },
-                                      leading: const SettingsLeadingIcon(
-                                          iosIcon: CupertinoIcons.bell,
-                                          materialIcon: Icons.notifications,
-                                          containerColor: Colors.green)),
-                                  const SettingsDivider(),
-                                  SettingsTile(
-                                      backgroundColor: tileColor,
-                                      onTap: () async {
-                                        ns.pushAndRemoveSettingsUntil(
-                                          context,
-                                          TroubleshootPanel(),
-                                          (route) => route.isFirst,
-                                        );
-                                      },
-                                      leading: const SettingsLeadingIcon(
-                                        iosIcon: CupertinoIcons.wrench_fill,
-                                        materialIcon: Icons.adb,
-                                        containerColor: Colors.blueAccent,
-                                      ),
-                                      title: "Developer Tools",
-                                      subtitle: "View logs, troubleshoot bugs, and more",
-                                      trailing: const NextButton(),
-                                    )
-                                ],
-                              ),
-                              SettingsHeader(
-                                  iosSubtitle: iosSubtitle,
-                                  materialSubtitle: materialSubtitle,
-                                  text: "Backup and Restore"),
-                              SettingsSection(
-                                  backgroundColor: tileColor,
-                                  children: [
-                                    SettingsTile(
-                                      backgroundColor: tileColor,
-                                      onTap: () {
-                                        ns.pushAndRemoveSettingsUntil(
-                                          context,
-                                          BackupRestorePanel(),
-                                          (route) => route.isFirst,
-                                        );
-                                      },
-                                      trailing: const NextButton(),
-                                      leading: const SettingsLeadingIcon(
-                                        iosIcon: CupertinoIcons.cloud_upload_fill,
-                                        materialIcon: Icons.backup,
-                                        containerColor: Colors.amber,
-                                      ),
-                                      title: "Backup & Restore",
-                                      subtitle:
-                                          "Backup and restore all app settings and custom themes",
-                                    ),
-                                    if (!kIsWeb && !kIsDesktop && !usingRustPush)
-                                    const SettingsDivider(),
-                                    if (!kIsWeb && !kIsDesktop && !usingRustPush)
-                                      SettingsTile(
-                                        backgroundColor: tileColor,
-                                        onTap: () async {
-                                          void closeDialog() {
-                                            Get.closeAllSnackbars();
-                                            Navigator.of(context).pop();
-                                            Future.delayed(
-                                                const Duration(
-                                                    milliseconds: 400), () {
-                                              progress.value = null;
-                                              totalSize.value = null;
-                                            });
-                                          }
-
-                                          showDialog(
-                                              context: context,
-                                              builder: (context) => AlertDialog(
-                                                      backgroundColor: context
-                                                          .theme
-                                                          .colorScheme
-                                                          .properSurface,
-                                                      title: Text(
-                                                          "Uploading contacts...",
-                                                          style: context
-                                                              .theme
-                                                              .textTheme
-                                                              .titleLarge),
-                                                      content: Column(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          mainAxisSize:
-                                                              MainAxisSize.min,
-                                                          children: <Widget>[
-                                                            Obx(
-                                                              () => Text(
-                                                                '${progress.value != null && totalSize.value != null ? (progress.value! * totalSize.value! / 1000).getFriendlySize(withSuffix: false) : ""} / ${((totalSize.value ?? 0).toDouble() / 1000).getFriendlySize()} (${((progress.value ?? 0) * 100).floor()}%)',
-                                                                style: context
-                                                                    .theme
-                                                                    .textTheme
-                                                                    .bodyLarge,
-                                                              ),
-                                                            ),
-                                                            const SizedBox(
-                                                                height: 10.0),
-                                                            Obx(
-                                                              () =>
-                                                                  LinearProgressIndicator(
-                                                                backgroundColor:
-                                                                    context
-                                                                        .theme
-                                                                        .colorScheme
-                                                                        .outline,
-                                                                value: progress
-                                                                    .value,
-                                                                minHeight: 5,
-                                                                valueColor: AlwaysStoppedAnimation<
-                                                                        Color>(
-                                                                    context
-                                                                        .theme
-                                                                        .colorScheme
-                                                                        .primary),
-                                                              ),
-                                                            ),
-                                                            const SizedBox(
-                                                              height: 15.0,
-                                                            ),
-                                                            Obx(
-                                                              () => Text(
-                                                                progress.value ==
-                                                                        1
-                                                                    ? "Upload Complete!"
-                                                                    : "You can close this dialog. Contacts will continue to upload in the background.",
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .center,
-                                                                style: context
-                                                                    .theme
-                                                                    .textTheme
-                                                                    .bodyLarge,
-                                                              ),
-                                                            ),
-                                                          ]),
-                                                      actions: [
-                                                        Obx(
-                                                          () =>
-                                                              uploadingContacts
-                                                                      .value
-                                                                  ? Container(
-                                                                      height: 0,
-                                                                      width: 0)
-                                                                  : TextButton(
-                                                                      child: Text(
-                                                                          "Close",
-                                                                          style: context
-                                                                              .theme
-                                                                              .textTheme
-                                                                              .bodyLarge!
-                                                                              .copyWith(color: context.theme.colorScheme.primary)),
-                                                                      onPressed:
-                                                                          () async {
-                                                                        closeDialog
-                                                                            .call();
-                                                                      },
-                                                                    ),
-                                                        ),
-                                                      ]));
-
-                                          final contacts =
-                                              <Map<String, dynamic>>[];
-                                          for (Contact c in cs.contacts) {
-                                            var map = c.toMap();
-                                            contacts.add(map);
-                                          }
-                                          http.createContact(contacts,
-                                              onSendProgress: (count, total) {
-                                            uploadingContacts.value = true;
-                                            progress.value = count / total;
-                                            totalSize.value = total;
-                                            if (progress.value == 1.0) {
-                                              uploadingContacts.value = false;
-                                              showSnackbar("Notice",
-                                                  "Successfully exported contacts to server");
-                                            }
-                                          }).catchError((err, stack) {
-                                            if (err is Response) {
-                                              Logger.error(
-                                                  err.data["error"]["message"]
-                                                      .toString(),
-                                                  error: err,
-                                                  trace: stack);
-                                            } else {
-                                              Logger.error(
-                                                  "Failed to create contact!",
-                                                  error: err,
-                                                  trace: stack);
-                                            }
-
-                                            closeDialog.call();
-                                            showSnackbar("Error",
-                                                "Failed to export contacts to server");
-                                            return Response(
-                                                requestOptions:
-                                                    RequestOptions(path: ''));
-                                          });
-                                        },
-                                        leading: const SettingsLeadingIcon(
-                                            iosIcon: CupertinoIcons.group_solid,
-                                            materialIcon: Icons.contacts,
-                                            containerColor: Colors.green),
-                                        title: "Export Contacts",
-                                        subtitle:
-                                            "Send contacts to server for use on the desktop app",
-                                      ),
-                                  ]),
-                              SettingsHeader(
-                                  iosSubtitle: iosSubtitle,
-                                  materialSubtitle: materialSubtitle,
-                                  text: "About & Links"),
-                              SettingsSection(
-                                backgroundColor: tileColor,
-                                children: [
-                                  if (!kIsWeb && (Platform.isAndroid || Platform.isWindows))
-                                    SettingsTile(
-                                      title: "Leave Us a Review",
-                                      subtitle: "Enjoying the app? Leave us a review on the ${Platform.isAndroid ? 'Google Play Store' : 'Microsoft Store'}!",
-                                      onTap: () async {
-                                        // Just open the listing for now. We don't want to actually open the dialog here.
-                                        // If a review has been left, nothing will happen if tapped, which we don't want.
-                                        final InAppReview inAppReview = InAppReview.instance;
-                                        inAppReview.openStoreListing(microsoftStoreId: '9P3XF8KJ0LSM');
-                                      },
-                                      leading: const SettingsLeadingIcon(
-                                        iosIcon: CupertinoIcons.star_fill,
-                                        materialIcon: Icons.star,
-                                        containerColor: Colors.blue,
-                                      ),
-                                      isThreeLine: false,
-                                    ),
-                                    if (!kIsWeb && (Platform.isAndroid || Platform.isWindows))
-                                  const SettingsDivider(),
-                                  SettingsTile(
-                                    title: "Join Our Discord",
-                                    subtitle: "Join our Discord server to chat with other OpenBubbles users and the developers",
-                                    onTap: () async {
-                                      await launchUrl(Uri(scheme: "https", host: "discord.gg", path: "qUB3ksM3Ry"), mode: LaunchMode.externalApplication);
-                                    },
-                                    leading: SettingsLeadingIcon(
-                                      iosIcon: Icons.discord,
-                                      materialIcon: Icons.discord,
-                                      containerColor: HexColor('#7785CC'),
-                                    ),
-                                  ),
-                                  const SettingsDivider(),
-                                  SettingsTile(
-                                    backgroundColor: tileColor,
-                                    title: "About & More",
-                                    subtitle: "Links, Changelog, & More",
-                                    onTap: () {
-                                      ns.pushAndRemoveSettingsUntil(
-                                        context,
-                                        AboutPanel(),
-                                        (route) => route.isFirst,
-                                      );
-                                    },
-                                    trailing: const NextButton(),
-                                    leading: const SettingsLeadingIcon(
-                                      iosIcon: CupertinoIcons.info_circle_fill,
-                                      materialIcon: Icons.info,
-                                      containerColor: Colors.blueAccent,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SettingsHeader(
-                                  iosSubtitle: iosSubtitle,
-                                  materialSubtitle: materialSubtitle,
-                                  text: "Danger Zone"),
-                              SettingsSection(
-                                  backgroundColor: tileColor,
-                                  children: [
-                                    if (!kIsWeb)
-                                      SettingsTile(
-                                        backgroundColor: tileColor,
-                                        onTap: () {
-                                          showDialog(
-                                            barrierDismissible: true,
-                                            context: context,
-                                            builder: (BuildContext context) {
-                                              return AlertDialog(
-                                                title: Text(
-                                                  "Are you sure?",
-                                                  style: context
-                                                      .theme.textTheme.titleLarge,
-                                                ),
-                                                content: Text(
-                                                  "This will remove all attachments from this app. Recent attachments will be automatically re-downloaded when you enter a chat. This will not delete attachments from your server.",
-                                                  style: context
-                                                      .theme.textTheme.bodyLarge,
-                                                ),
-                                                backgroundColor: context.theme
-                                                    .colorScheme.properSurface,
-                                                actions: <Widget>[
-                                                  TextButton(
-                                                    child: Text("No",
-                                                        style: context.theme
-                                                            .textTheme.bodyLarge!
-                                                            .copyWith(
-                                                                color: context
-                                                                    .theme
-                                                                    .colorScheme
-                                                                    .primary)),
-                                                    onPressed: () {
-                                                      Navigator.of(context).pop();
-                                                    },
-                                                  ),
-                                                  TextButton(
-                                                    child: Text("Yes",
-                                                        style: context.theme
-                                                            .textTheme.bodyLarge!
-                                                            .copyWith(
-                                                                color: context
-                                                                    .theme
-                                                                    .colorScheme
-                                                                    .primary)),
-                                                    onPressed: () async {
-                                                      final dir = Directory(
-                                                          "${fs.appDocDir.path}/attachments");
-                                                      await dir.delete(
-                                                          recursive: true);
-                                                      showSnackbar("Success",
-                                                          "Deleted cached attachments");
-                                                    }
-                                                  ),
-                                                ],
-                                              );
-                                            },
-                                          );
-                                        },
-                                        leading: SettingsLeadingIcon(
-                                          iosIcon: CupertinoIcons.trash_slash_fill,
-                                          materialIcon: Icons.delete_forever_outlined,
-                                          containerColor: Colors.red[700],
-                                        ),
-                                        title: "Delete All Attachments",
-                                        subtitle: "Remove all attachments from this app",
-                                      ),
-                                      const SettingsDivider(),
-                                      SettingsTile(
-                                        backgroundColor: tileColor,
-                                        onTap: () {
-                                          showDialog(
-                                            barrierDismissible: true,
-                                            context: context,
-                                            builder: (BuildContext context) {
-                                              return AlertDialog(
-                                                title: Text(
-                                                  "Are you sure?",
-                                                  style: context
-                                                      .theme.textTheme.titleLarge,
-                                                ),
-                                                content: Text(
-                                                  "Re-login will be required. No messages will be deleted.",
-                                                  style: context
-                                                      .theme.textTheme.bodyLarge,
-                                                ),
-                                                backgroundColor: context.theme
-                                                    .colorScheme.properSurface,
-                                                actions: <Widget>[
-                                                  TextButton(
-                                                    child: Text("No",
-                                                        style: context.theme
-                                                            .textTheme.bodyLarge!
-                                                            .copyWith(
-                                                                color: context
-                                                                    .theme
-                                                                    .colorScheme
-                                                                    .primary)),
-                                                    onPressed: () {
-                                                      Navigator.of(context).pop();
-                                                    },
-                                                  ),
-                                                  TextButton(
-                                                    child: Text("Yes",
-                                                        style: context.theme
-                                                            .textTheme.bodyLarge!
-                                                            .copyWith(
-                                                                color: context
-                                                                    .theme
-                                                                    .colorScheme
-                                                                    .primary)),
-                                                    onPressed: () async {
-                                                      (backend as RustPushBackend).markFailedToLogin();
-                                                    }
-                                                  ),
-                                                ],
-                                              );
-                                            },
-                                          );
-                                        },
-                                        leading: SettingsLeadingIcon(
-                                          iosIcon: CupertinoIcons.wrench_fill,
-                                          materialIcon: Icons.settings,
-                                          containerColor: Colors.red[700],
-                                        ),
-                                        title: "Reconfigure",
-                                        subtitle: "Keep messages and reconfigure",
-                                      ),
-                                      const SettingsDivider(),
-                                      SettingsTile(
-                                        backgroundColor: tileColor,
-                                        onTap: () {
-                                          showDialog(
-                                            barrierDismissible: true,
-                                            context: context,
-                                            builder: (BuildContext context) {
-                                              return AlertDialog(
-                                                title: Text(
-                                                  "Are you sure?",
-                                                  style: context
-                                                      .theme.textTheme.titleLarge,
-                                                ),
-                                                content: Text(
-                                                  "Re-login will be required. No messages will be deleted.",
-                                                  style: context
-                                                      .theme.textTheme.bodyLarge,
-                                                ),
-                                                backgroundColor: context.theme
-                                                    .colorScheme.properSurface,
-                                                actions: <Widget>[
-                                                  TextButton(
-                                                    child: Text("No",
-                                                        style: context.theme
-                                                            .textTheme.bodyLarge!
-                                                            .copyWith(
-                                                                color: context
-                                                                    .theme
-                                                                    .colorScheme
-                                                                    .primary)),
-                                                    onPressed: () {
-                                                      Navigator.of(context).pop();
-                                                    },
-                                                  ),
-                                                  TextButton(
-                                                    child: Text("Yes",
-                                                        style: context.theme
-                                                            .textTheme.bodyLarge!
-                                                            .copyWith(
-                                                                color: context
-                                                                    .theme
-                                                                    .colorScheme
-                                                                    .primary)),
-                                                    onPressed: () async {
-                                                      if (ss.settings.deviceIsHosted.value) {
-                                                        String? ticket = await api.validateRelay(state: pushService.state);
-                                                        if (ticket != null) {
-                                                          var activated = await http.dio.post("https://hw.openbubbles.app/ticket/$ticket/release");
-                                                          if (activated.statusCode == 200) {
-                                                            (backend as RustPushBackend).markFailedToLogin(hw: true);
-                                                            return;
-                                                          }
-                                                        }
-                                                        (backend as RustPushBackend).markFailedToLogin();
-                                                        return;
-                                                      } else {
-                                                        (backend as RustPushBackend).markFailedToLogin(hw: true);
-                                                      }
-                                                    }
-                                                  ),
-                                                ],
-                                              );
-                                            },
-                                          );
-                                        },
-                                        leading: SettingsLeadingIcon(
-                                          iosIcon: CupertinoIcons.device_laptop,
-                                          materialIcon: Icons.laptop,
-                                          containerColor: Colors.red[700],
-                                        ),
-                                        title: "Change Apple Hardware",
-                                        subtitle: "Keep messages and change hardware",
-                                      ),
-                                    if (!kIsWeb)
-                                      const SettingsDivider(),
-                                    SettingsTile(
-                                      backgroundColor: tileColor,
-                                      onTap: () {
-                                        showDialog(
-                                          barrierDismissible: false,
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return AlertDialog(
-                                              title: Text(
-                                                "Are you sure?",
-                                                style: context
-                                                    .theme.textTheme.titleLarge,
-                                              ),
-                                              content: Text(
-                                                "This will delete all app data, including your settings, messages, attachments, and more. This action cannot be undone. It is recommended that you take a backup of your settings before proceeding. This will also close the app once the process is complete.",
-                                                style: context
-                                                    .theme.textTheme.bodyLarge,
-                                              ),
-                                              backgroundColor: context.theme
-                                                  .colorScheme.properSurface,
-                                              actions: <Widget>[
-                                                TextButton(
-                                                  child: Text("No",
-                                                      style: context.theme
-                                                          .textTheme.bodyLarge!
-                                                          .copyWith(
-                                                              color: context
-                                                                  .theme
-                                                                  .colorScheme
-                                                                  .primary)),
-                                                  onPressed: () {
-                                                    Navigator.of(context).pop();
-                                                  },
-                                                ),
-                                                TextButton(
-                                                  child: Text("Keep hardware",
-                                                      style: context.theme
-                                                          .textTheme.bodyLarge!
-                                                          .copyWith(
-                                                              color: context
-                                                                  .theme
-                                                                  .colorScheme
-                                                                  .primary)),
-                                                  onPressed: () async {
-                                                    fs.deleteDB();
-                                                    socket.forgetConnection();
-                                                    if (usingRustPush) {
-                                                      await pushService.reset(false, true);
-                                                    }
-                                                    ss.settings = Settings();
-                                                    await ss.settings.saveAsync();
-
-                                                    await ss.prefs.clear();
-                                                    await ss.prefs.setString("selected-dark", "OLED Dark");
-                                                    await ss.prefs.setString("selected-light", "Bright White");
-                                                    Database.themes.putMany(ts.defaultThemes);
-                                                    
-                                                    // Clear the FCM data from the database, shared preferences, and locally
-                                                    await FCMData.deleteFcmData();
-
-                                                    // Delete the Firebase FCM token
-                                                    try {
-                                                      if (fcm.token != null) {
-                                                        await mcs.invokeMethod("firebase-delete-token");
-                                                      }
-                                                    } catch (e, s) {
-                                                      Logger.error("Failed to delete Firebase FCM token", error: e, trace: s);
-                                                    }
-
-                                                    // Fully close the app
-                                                    exit(0);
-                                                  },
-                                                ),
-                                                TextButton(
-                                                  child: Text("Yes",
-                                                      style: context.theme
-                                                          .textTheme.bodyLarge!
-                                                          .copyWith(
-                                                              color: context
-                                                                  .theme
-                                                                  .colorScheme
-                                                                  .primary)),
-                                                  onPressed: () async {
-                                                    fs.deleteDB();
-                                                    socket.forgetConnection();
-                                                    if (usingRustPush) {
-                                                      await pushService.reset(true, true);
-                                                    }
-                                                    ss.settings = Settings();
-                                                    await ss.settings.saveAsync();
-
-                                                    await ss.prefs.clear();
-                                                    await ss.prefs.setString("selected-dark", "OLED Dark");
-                                                    await ss.prefs.setString("selected-light", "Bright White");
-                                                    Database.themes.putMany(ts.defaultThemes);
-                                                    
-                                                    // Clear the FCM data from the database, shared preferences, and locally
-                                                    await FCMData.deleteFcmData();
-
-                                                    // Delete the Firebase FCM token
-                                                    try {
-                                                      if (fcm.token != null) {
-                                                        await mcs.invokeMethod("firebase-delete-token");
-                                                      }
-                                                    } catch (e, s) {
-                                                      Logger.error("Failed to delete Firebase FCM token", error: e, trace: s);
-                                                    }
-
-                                                    // Fully close the app
-                                                    exit(0);
-                                                  },
-                                                ),
-                                              ],
-                                            );
-                                          },
-                                        );
-                                      },
-                                      leading: SettingsLeadingIcon(
-                                        iosIcon: CupertinoIcons.refresh_circled_solid,
-                                        materialIcon: Icons.refresh_rounded,
-                                        containerColor: Colors.red[700],
-                                      ),
-                                      title: kIsWeb ? "Logout" : "Reset App",
-                                      subtitle: kIsWeb
-                                          ? null
-                                          : "Resets the app to default settings",
-                                    ),
-                                  ])
                             ],
                           ),
                         ),
-                      ]),
+                        // Other sections (Backup, About, Danger Zone)
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              children: [
+                                ExpressiveCard(
+                                  onTap: () => ns.pushAndRemoveSettingsUntil(context, BackupRestorePanel(), (route) => route.isFirst),
+                                  child: const ListTile(
+                                    leading: Icon(Icons.backup, color: Colors.blue),
+                                    title: Text("Backup & Restore"),
+                                    trailing: Icon(Icons.arrow_forward_ios, size: 16),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                ExpressiveCard(
+                                  onTap: () => ns.pushAndRemoveSettingsUntil(context, AboutPanel(), (route) => route.isFirst),
+                                  child: const ListTile(
+                                    leading: Icon(Icons.info, color: Colors.green),
+                                    title: Text("About & Links"),
+                                    trailing: Icon(Icons.arrow_forward_ios, size: 16),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Danger Zone",
+                                  style: context.textTheme.titleMedium?.copyWith(
+                                    color: context.theme.colorScheme.error,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                ExpressiveCard(
+                                  color: context.theme.colorScheme.errorContainer.withOpacity(0.3),
+                                  onTap: () async {
+                                    if (usingRustPush) {
+                                      await (backend as RustPushBackend).markFailedToLogin(hw: true, logout: true);
+                                    }
+                                    Get.offAll(() => SetupView());
+                                  },
+                                  child: ListTile(
+                                    leading: Icon(Icons.refresh, color: context.theme.colorScheme.error),
+                                    title: Text("Reconfigure", style: TextStyle(color: context.theme.colorScheme.error, fontWeight: FontWeight.bold)),
+                                    subtitle: Text("Reset connection settings", style: TextStyle(color: context.theme.colorScheme.error)),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                ExpressiveCard(
+                                  color: context.theme.colorScheme.errorContainer.withOpacity(0.3),
+                                  onTap: () async {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: Text("Reset App?", style: context.theme.textTheme.titleLarge),
+                                        content: Text("This will delete all data and reset the app. This action cannot be undone.", style: context.theme.textTheme.bodyLarge),
+                                        backgroundColor: context.theme.colorScheme.properSurface,
+                                        actions: [
+                                          TextButton(
+                                            child: Text("Cancel", style: context.theme.textTheme.bodyLarge!.copyWith(color: context.theme.colorScheme.primary)),
+                                            onPressed: () => Navigator.of(context).pop(),
+                                          ),
+                                          TextButton(
+                                            child: Text("Reset", style: context.theme.textTheme.bodyLarge!.copyWith(color: context.theme.colorScheme.error)),
+                                            onPressed: () async {
+                                              Navigator.of(context).pop();
+                                              await ss.prefs.clear();
+                                              if (usingRustPush) {
+                                                await (backend as RustPushBackend).markFailedToLogin(hw: true, logout: true);
+                                              }
+                                              Get.offAll(() => SetupView());
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                  child: ListTile(
+                                    leading: Icon(Icons.delete_forever, color: context.theme.colorScheme.error),
+                                    title: Text("Reset App", style: TextStyle(color: context.theme.colorScheme.error, fontWeight: FontWeight.bold)),
+                                    subtitle: Text("Clear all data and reset", style: TextStyle(color: context.theme.colorScheme.error)),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   right: LayoutBuilder(builder: (context, constraints) {
                     ns.maxWidthSettings = constraints.maxWidth;
                     return PopScope(

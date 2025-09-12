@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:bluebubbles/app/components/avatars/contact_avatar_group_widget.dart';
 import 'package:bluebubbles/app/layouts/conversation_view/widgets/message/typing/typing_clipper.dart';
-import 'package:bluebubbles/app/components/avatars/contact_avatar_widget.dart';
+import 'package:bluebubbles/app/layouts/conversation_view/widgets/message/misc/expressive_clipper.dart';
 import 'package:bluebubbles/app/wrappers/stateful_boilerplate.dart';
 import 'package:bluebubbles/helpers/helpers.dart';
 import 'package:bluebubbles/services/services.dart';
@@ -52,24 +52,31 @@ class _TypingIndicatorState extends OptimizedState<TypingIndicator> {
           ),
         ),
       ) : Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 10, right: 10),
             child: ContactAvatarGroupWidget(
               participants: [...(widget.controller?.showTypingIndicatorFor ?? [])],
-              size: 25,
+              size: 30,
               editable: false,
             ),
           ),
-          if (widget.controller != null && widget.controller!.showTypingIndicatorFor.length == 1 && widget.controller!.typingIndicatorData[widget.controller!.showTypingIndicatorFor.first.address]?.$2 != null)
-          Container(
-            child: ClipRRect(child: Image.memory(widget.controller!.typingIndicatorData[widget.controller!.showTypingIndicatorFor.first.address]!.$2!), borderRadius: BorderRadius.circular(99),),
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            height: 25,
+          ClipPath(
+            clipper: ExpressiveClipper(isFromMe: false, connectUpper: false, connectLower: false),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              color: context.theme.colorScheme.surfaceContainerHighest,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AnimatedDot(index: 2),
+                  AnimatedDot(index: 1),
+                  AnimatedDot(index: 0),
+                ],
+              ),
+            ),
           ),
-          AnimatedDot(index: 2),
-          AnimatedDot(index: 1),
-          AnimatedDot(index: 0),
         ],
         mainAxisSize: MainAxisSize.min,
       )) : const SizedBox.shrink(),
@@ -138,15 +145,15 @@ class _AnimatedDotState extends OptimizedState<AnimatedDot> with SingleTickerPro
         animation: animation,
         builder: (context, child) {
           return Padding(
-            padding: EdgeInsets.only(bottom: (math.sin(animation.value + (widget.index) * math.pi / 4).abs() * 20).clamp(1, 20).toDouble()),
+            padding: EdgeInsets.only(bottom: (math.sin(animation.value + (widget.index) * math.pi / 4).abs() * 10).clamp(0, 10).toDouble()),
             child: Container(
               decoration: BoxDecoration(
-                color: context.theme.colorScheme.properSurface,
+                color: context.theme.colorScheme.primary,
                 shape: BoxShape.circle,
               ),
-              width: 4,
-              height: 4,
-              margin: const EdgeInsets.symmetric(horizontal: 2),
+              width: 8,
+              height: 8,
+              margin: const EdgeInsets.symmetric(horizontal: 3),
             ),
           );
         },

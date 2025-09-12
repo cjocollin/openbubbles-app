@@ -45,7 +45,7 @@ class CupertinoConversationListState
   bool canPnr = true;
   Color get backgroundColor =>
       ss.settings.windowEffect.value == WindowEffect.disabled
-          ? context.theme.colorScheme.background
+          ? context.theme.colorScheme.surface
           : Colors.transparent;
 
   ConversationListController get controller => widget.parentController;
@@ -73,7 +73,7 @@ class CupertinoConversationListState
     return Scaffold(
       backgroundColor: ss.settings.windowEffect.value != WindowEffect.disabled
           ? Colors.transparent
-          : context.theme.colorScheme.background,
+          : context.theme.colorScheme.surface,
       extendBodyBehindAppBar: !showArchived && !showUnknown && !showDeleted,
       floatingActionButton: Obx(() =>
           !ss.settings.moveChatCreatorToHeader.value &&

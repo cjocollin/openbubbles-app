@@ -68,7 +68,7 @@ class ConversationViewState extends OptimizedState<ConversationView> {
       value: SystemUiOverlayStyle(
         systemNavigationBarColor: ss.settings.immersiveMode.value
             ? Colors.transparent
-            : context.theme.colorScheme.background,
+            : context.theme.colorScheme.surface,
         systemNavigationBarIconBrightness: context.theme.colorScheme.brightness.opposite,
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: context.theme.colorScheme.brightness.opposite,
@@ -114,7 +114,7 @@ class ConversationViewState extends OptimizedState<ConversationView> {
             top: false,
             bottom: false,
             child: Scaffold(
-              backgroundColor: ss.settings.windowEffect.value != WindowEffect.disabled ? Colors.transparent : context.theme.colorScheme.background,
+              backgroundColor: ss.settings.windowEffect.value != WindowEffect.disabled ? Colors.transparent : context.theme.colorScheme.surface,
               extendBodyBehindAppBar: true,
               appBar: PreferredSize(
                   preferredSize: Size(ns.width(context), ((kIsDesktop ? (!iOS ? 25 : 5) : 0) + 90 * (iOS ? ss.settings.avatarScale.value : 0) + (!iOS ? kToolbarHeight : 0) + (controller.suggestedContact.value != null || controller.suggestShare.value ? 68 : 0))),
@@ -226,8 +226,22 @@ class ConversationViewState extends OptimizedState<ConversationView> {
                                         controller.focusNode.requestFocus();
                                       }
                                     },
-                                    child: ConversationTextField(
-                                      parentController: controller,
+                                    child: Container(
+                                      margin: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(28),
+                                        boxShadow: [
+                                          const BoxShadow(
+                                            color: Colors.black12,
+                                            blurRadius: 12,
+                                            spreadRadius: -4,
+                                            offset: Offset(0, 4),
+                                          ),
+                                        ],
+                                      ),
+                                      child: ConversationTextField(
+                                        parentController: controller,
+                                      ),
                                     ),
                                   ),
                                 )

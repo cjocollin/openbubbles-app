@@ -674,7 +674,7 @@ class _FindMyPageState extends OptimizedState<FindMyPage> with SingleTickerProvi
                                 child: Container(
                                   padding: const EdgeInsets.all(10.0),
                                   decoration: BoxDecoration(
-                                      color: context.theme.colorScheme.background,
+                                      color: context.theme.colorScheme.surface,
                                       borderRadius: const BorderRadius.all(Radius.circular(10))),
                                   child: SingleChildScrollView(
                                     child: SelectableText(
@@ -787,7 +787,7 @@ class _FindMyPageState extends OptimizedState<FindMyPage> with SingleTickerProvi
                                 child: Container(
                                   padding: const EdgeInsets.all(10.0),
                                   decoration: BoxDecoration(
-                                      color: context.theme.colorScheme.background,
+                                      color: context.theme.colorScheme.surface,
                                       borderRadius: const BorderRadius.all(Radius.circular(10))),
                                   child: SingleChildScrollView(
                                     child: SelectableText(
@@ -861,7 +861,7 @@ class _FindMyPageState extends OptimizedState<FindMyPage> with SingleTickerProvi
                                         child: Container(
                                           padding: const EdgeInsets.all(10.0),
                                           decoration: BoxDecoration(
-                                              color: context.theme.colorScheme.background,
+                                              color: context.theme.colorScheme.surface,
                                               borderRadius: const BorderRadius.all(Radius.circular(10))),
                                           child: SingleChildScrollView(
                                             child: SelectableText(
@@ -988,7 +988,7 @@ class _FindMyPageState extends OptimizedState<FindMyPage> with SingleTickerProvi
                                 child: Container(
                                   padding: const EdgeInsets.all(10.0),
                                   decoration: BoxDecoration(
-                                      color: context.theme.colorScheme.background,
+                                      color: context.theme.colorScheme.surface,
                                       borderRadius: const BorderRadius.all(Radius.circular(10))),
                                   child: SingleChildScrollView(
                                     child: SelectableText(
@@ -1053,7 +1053,7 @@ class _FindMyPageState extends OptimizedState<FindMyPage> with SingleTickerProvi
                                         child: Container(
                                           padding: const EdgeInsets.all(10.0),
                                           decoration: BoxDecoration(
-                                              color: context.theme.colorScheme.background,
+                                              color: context.theme.colorScheme.surface,
                                               borderRadius: const BorderRadius.all(Radius.circular(10))),
                                           child: SingleChildScrollView(
                                             child: SelectableText(
@@ -1087,7 +1087,7 @@ class _FindMyPageState extends OptimizedState<FindMyPage> with SingleTickerProvi
         value: SystemUiOverlayStyle(
           systemNavigationBarColor: ss.settings.immersiveMode.value
               ? Colors.transparent
-              : context.theme.colorScheme.background, // navigation bar color
+              : context.theme.colorScheme.surface, // navigation bar color
           systemNavigationBarIconBrightness: context.theme.colorScheme.brightness.opposite,
           statusBarColor: Colors.transparent, // status bar color
           statusBarIconBrightness: Brightness.dark,
@@ -1105,7 +1105,7 @@ class _FindMyPageState extends OptimizedState<FindMyPage> with SingleTickerProvi
   Widget buildTabletLayout(BuildContext context, List<SliverList> devicesBodySlivers, List<SliverList> friendsBodySlivers) {
     return Obx(
       () => Scaffold(
-        backgroundColor: context.theme.colorScheme.background.themeOpacity(context),
+        backgroundColor: context.theme.colorScheme.surface.themeOpacity(context),
         body: Stack(
           children: [
             Row(
@@ -1138,7 +1138,7 @@ class _FindMyPageState extends OptimizedState<FindMyPage> with SingleTickerProvi
                                   : IconButton(
                                       iconSize: 22,
                                       icon: Icon(iOS ? CupertinoIcons.arrow_counterclockwise : Icons.refresh,
-                                          color: context.theme.colorScheme.onBackground, size: 22),
+                                          color: context.theme.colorScheme.onSurface, size: 22),
                                       onPressed: () {
                                         setState(() {
                                           refreshing = true;
@@ -1455,7 +1455,7 @@ class _FindMyPageState extends OptimizedState<FindMyPage> with SingleTickerProvi
                         : IconButton(
                             iconSize: 22,
                             icon: Icon(iOS ? CupertinoIcons.arrow_counterclockwise : Icons.refresh,
-                                color: context.theme.colorScheme.onBackground, size: 22),
+                                color: context.theme.colorScheme.onSurface, size: 22),
                             onPressed: () {
                               setState(() {
                                 refreshing = true;
@@ -1528,7 +1528,7 @@ class _FindMyPageState extends OptimizedState<FindMyPage> with SingleTickerProvi
                 : IconButton(
                     iconSize: 22,
                     icon: Icon(iOS ? CupertinoIcons.arrow_counterclockwise : Icons.refresh,
-                        color: context.theme.colorScheme.onBackground, size: 22),
+                        color: context.theme.colorScheme.onSurface, size: 22),
                     onPressed: () {
                       setState(() {
                         refreshing = true;
@@ -1567,7 +1567,7 @@ class _FindMyPageState extends OptimizedState<FindMyPage> with SingleTickerProvi
                 child: Center(
                     child: Text(title,
                         style: context.theme.textTheme.displaySmall!
-                            .copyWith(color: context.theme.colorScheme.onBackground),
+                            .copyWith(color: context.theme.colorScheme.onSurface),
                         textAlign: TextAlign.center)),
               ),
               FadeTransition(

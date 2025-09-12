@@ -358,7 +358,7 @@ class Main extends StatelessWidget {
                         });
                       }
                       return Container(
-                        color: context.theme.colorScheme.background,
+                        color: context.theme.colorScheme.surface,
                         child: Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -494,7 +494,7 @@ class _HomeState extends OptimizedState<Home> with WidgetsBindingObserver, TrayL
             if (event.item1 == 'theme-update') {
               EasyDebounce.debounce('window-effect', const Duration(milliseconds: 500), () async {
                 if (mounted) {
-                  await WindowEffects.setEffect(color: context.theme.colorScheme.background);
+                  await WindowEffects.setEffect(color: context.theme.colorScheme.surface);
                 }
               });
             }
@@ -595,7 +595,7 @@ class _HomeState extends OptimizedState<Home> with WidgetsBindingObserver, TrayL
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       systemNavigationBarColor: ss.settings.immersiveMode.value
           ? Colors.transparent
-          : context.theme.colorScheme.background, // navigation bar color
+          : context.theme.colorScheme.surface, // navigation bar color
       systemNavigationBarIconBrightness: context.theme.colorScheme.brightness.opposite,
       statusBarColor: Colors.transparent, // status bar color
       statusBarIconBrightness: context.theme.colorScheme.brightness.opposite,
@@ -605,7 +605,7 @@ class _HomeState extends OptimizedState<Home> with WidgetsBindingObserver, TrayL
       value: SystemUiOverlayStyle(
         systemNavigationBarColor: ss.settings.immersiveMode.value
             ? Colors.transparent
-            : context.theme.colorScheme.background, // navigation bar color
+            : context.theme.colorScheme.surface, // navigation bar color
         systemNavigationBarIconBrightness: context.theme.colorScheme.brightness.opposite,
         statusBarColor: Colors.transparent, // status bar color
         statusBarIconBrightness: context.theme.colorScheme.brightness.opposite,
@@ -621,7 +621,7 @@ class _HomeState extends OptimizedState<Home> with WidgetsBindingObserver, TrayL
           GoBackIntent: GoBackAction(context),
         },
         child: Obx(() => Scaffold(
-              backgroundColor: context.theme.colorScheme.background.themeOpacity(context),
+              backgroundColor: context.theme.colorScheme.surface.themeOpacity(context),
               body: Builder(
                 builder: (BuildContext context) {
                   if (ss.settings.finishedSetup.value) {

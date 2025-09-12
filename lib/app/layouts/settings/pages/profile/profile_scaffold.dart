@@ -60,7 +60,7 @@ class ProfileScaffoldState
 
   Color get backgroundColor =>
       ss.settings.windowEffect.value == WindowEffect.disabled
-          ? context.theme.colorScheme.background
+          ? context.theme.colorScheme.surface
           : Colors.transparent;
 
   bool loaded = false;
@@ -145,7 +145,7 @@ class ProfileScaffoldState
     return Scaffold(
       backgroundColor: ss.settings.windowEffect.value != WindowEffect.disabled
           ? Colors.transparent
-          : context.theme.colorScheme.background,
+          : context.theme.colorScheme.surface,
       extendBodyBehindAppBar: true,
       appBar: PreferredSize(
           preferredSize: Size(ns.width(context), 50),

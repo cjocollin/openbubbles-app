@@ -19,7 +19,8 @@ class ContactAvatarWidget extends StatefulWidget {
       this.contact,
       this.scaleSize = true,
       this.preferHighResAvatar = false,
-      this.padding = EdgeInsets.zero});
+      this.padding = EdgeInsets.zero,
+      this.customShape});
   final Handle? handle;
   final Contact? contact;
   final double? size;
@@ -29,6 +30,7 @@ class ContactAvatarWidget extends StatefulWidget {
   final bool scaleSize;
   final bool preferHighResAvatar;
   final EdgeInsets padding;
+  final ShapeBorder? customShape;
 
   @override
   State<ContactAvatarWidget> createState() => _ContactAvatarWidgetState();
@@ -111,7 +113,7 @@ class _ContactAvatarWidgetState extends OptimizedState<ContactAvatarWidget> {
   @override
   Widget build(BuildContext context) {
     Color tileColor =
-        ts.inDarkMode(context) ? context.theme.colorScheme.properSurface : context.theme.colorScheme.background;
+        ts.inDarkMode(context) ? context.theme.colorScheme.properSurface : context.theme.colorScheme.surface;
 
     final size = ((widget.size ?? 40) * (widget.scaleSize ? ss.settings.avatarScale.value : 1)).roundToDouble();
     List<Color> colors = [];
@@ -147,7 +149,14 @@ class _ContactAvatarWidgetState extends OptimizedState<ContactAvatarWidget> {
               width: size,
               height: size,
               padding: widget.padding,
-              decoration: BoxDecoration(
+              decoration: ShapeDecoration(
+                shape: ((widget.customShape ?? const CircleBorder()) as OutlinedBorder).copyWith(
+                  side: BorderSide(
+                    color: ss.settings.skin.value == Skins.Samsung ? tileColor : context.theme.colorScheme.surface,
+                    width: widget.borderThickness,
+                    strokeAlign: BorderSide.strokeAlignOutside
+                  )
+                ),
                 gradient: LinearGradient(
                   begin: AlignmentDirectional.topStart,
                   end: AlignmentDirectional.bottomEnd,
@@ -157,11 +166,6 @@ class _ContactAvatarWidgetState extends OptimizedState<ContactAvatarWidget> {
                   ],
                   stops: [0.3, 0.9],
                 ),
-                border: Border.all(
-                    color: ss.settings.skin.value == Skins.Samsung ? tileColor : context.theme.colorScheme.background,
-                    width: widget.borderThickness,
-                    strokeAlign: BorderSide.strokeAlignOutside),
-                shape: BoxShape.circle,
               ),
               clipBehavior: Clip.antiAlias,
               alignment: Alignment.center,
@@ -185,7 +189,7 @@ class _ContactAvatarWidgetState extends OptimizedState<ContactAvatarWidget> {
                       key: Key("$keyPrefix-avatar-text"),
                       style: TextStyle(
                         fontSize: (widget.fontSize ?? 18).roundToDouble() * (material ? 1.25 : 1),
-                        color: material ? context.theme.colorScheme.background : Colors.white,
+                        color: material ? context.theme.colorScheme.surface : Colors.white,
                       ),
                       textAlign: TextAlign.center,
                     );
@@ -194,7 +198,7 @@ class _ContactAvatarWidgetState extends OptimizedState<ContactAvatarWidget> {
                         padding: const EdgeInsets.only(left: 1),
                         child: Icon(
                           iOS ? CupertinoIcons.person_fill : Icons.person,
-                          color: material ? context.theme.colorScheme.background : Colors.white,
+                          color: material ? context.theme.colorScheme.surface : Colors.white,
                           key: Key("$keyPrefix-avatar-icon"),
                           size: size / 2 * (material ? 1.25 : 1),
                         ));

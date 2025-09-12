@@ -22,7 +22,7 @@ import 'package:bluebubbles/utils/crypto_utils.dart';
 import 'package:bluebubbles/utils/logger/logger.dart';
 import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
-import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge.dart';
@@ -3016,7 +3016,7 @@ class RustPushService extends GetxService {
   Future handleMsg(api.PushMessage push, bool finalAttempt) async {
     try {
       await handleMsgInner(push);
-    } catch (e, s) {
+    } catch (e) {
       if (finalAttempt) markCertified(push);
       rethrow;
     }
@@ -4105,7 +4105,7 @@ class RustPushService extends GetxService {
     T result;
     try {
       result = await inner;
-    } catch (e, s) {
+    } catch (e) {
       Get.back();
       showSnackbar("Failure! Please try again", e.toString());
       rethrow;

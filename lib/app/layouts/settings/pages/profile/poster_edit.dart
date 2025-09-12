@@ -116,7 +116,7 @@ class PosterEditState
 
   Color get backgroundColor =>
       ss.settings.windowEffect.value == WindowEffect.disabled
-          ? context.theme.colorScheme.background
+          ? context.theme.colorScheme.surface
           : Colors.transparent;
 
 
@@ -618,7 +618,7 @@ class PosterEditState
       );
       updatePoster(newPoster);
     });
-    } catch(e, s) {
+    } catch(e) {
       Get.back();
       showSnackbar("Error", "Failed to update profile! $e");
       rethrow;
@@ -655,7 +655,7 @@ class PosterEditState
       child: Scaffold(
       backgroundColor: ss.settings.windowEffect.value != WindowEffect.disabled
           ? Colors.transparent
-          : context.theme.colorScheme.background,
+          : context.theme.colorScheme.surface,
       extendBodyBehindAppBar: true,
       body: Stack(
         fit: StackFit.expand,
@@ -1061,7 +1061,7 @@ class PosterEditState
 
                     widget.posterEdited(posterPath);
                     ownedPosterPath = null;
-                    } catch(e, s) {
+                    } catch(e) {
                       Get.back();
                       showSnackbar("Error", "Failed to update profile! $e");
                       rethrow;

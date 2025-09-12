@@ -11,6 +11,7 @@ import 'package:bluebubbles/app/layouts/conversation_view/widgets/message/misc/m
 import 'package:bluebubbles/app/layouts/conversation_view/widgets/message/misc/select_checkbox.dart';
 import 'package:bluebubbles/app/layouts/conversation_view/widgets/message/misc/slide_to_reply.dart';
 import 'package:bluebubbles/app/layouts/conversation_view/widgets/message/misc/tail_clipper.dart';
+import 'package:bluebubbles/app/layouts/conversation_view/widgets/message/misc/expressive_clipper.dart';
 import 'package:bluebubbles/app/layouts/conversation_view/widgets/message/popup/message_popup_holder.dart';
 import 'package:bluebubbles/app/layouts/conversation_view/widgets/message/reaction/reaction_holder.dart';
 import 'package:bluebubbles/app/layouts/conversation_view/widgets/message/reply/reply_bubble.dart';
@@ -248,12 +249,10 @@ class _MessageHolderState extends CustomState<MessageHolder, void, MessageWidget
                                     crossAxisAlignment: message.isFromMe! ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                                     mainAxisSize: MainAxisSize.min,
                                     children: e.edits.map((edit) => ClipPath(
-                                      clipper: TailClipper(
+                                      clipper: ExpressiveClipper(
                                         isFromMe: message.isFromMe!,
-                                        showTail: message.showTail(newerMessage) && e.part == controller.parts.length - 1,
-                                        connectLower: iOS ? false : (e.part != 0 && e.part != controller.parts.length - 1)
-                                            || (e.part == 0 && controller.parts.length > 1),
-                                        connectUpper: iOS ? false : e.part != 0,
+                                        connectLower: e.part != controller.parts.length - 1 || (newerMessage != null && message.connectToLower(newerMessage!)),
+                                        connectUpper: e.part != 0 || message.connectToUpper(),
                                       ),
                                       child: TextBubble(
                                         parentController: controller,
@@ -404,12 +403,10 @@ class _MessageHolderState extends CustomState<MessageHolder, void, MessageWidget
                                                     Padding(
                                                       padding: const EdgeInsets.only(bottom: 2.0),
                                                       child: ClipPath(
-                                                        clipper: TailClipper(
+                                                        clipper: ExpressiveClipper(
                                                           isFromMe: message.isFromMe!,
-                                                          showTail: false,
-                                                          connectLower: iOS ? false : (e.part != 0 && e.part != controller.parts.length - 1)
-                                                              || (e.part == 0 && controller.parts.length > 1),
-                                                          connectUpper: iOS ? false : e.part != 0,
+                                                          connectLower: e.part != controller.parts.length - 1 || (newerMessage != null && message.connectToLower(newerMessage!)),
+                                                          connectUpper: e.part != 0 || message.connectToUpper(),
                                                         ),
                                                         child: TextBubble(
                                                           parentController: controller,
@@ -469,12 +466,10 @@ class _MessageHolderState extends CustomState<MessageHolder, void, MessageWidget
                                                             },
                                                             child: Builder(builder: (context) {
                                                               var child = ClipPath(
-                                                              clipper: TailClipper(
+                                                              clipper: ExpressiveClipper(
                                                                 isFromMe: message.isFromMe!,
-                                                                showTail: message.showTail(newerMessage) && e.part == controller.parts.length - 1,
-                                                                connectLower: iOS ? false : (e.part != 0 && e.part != controller.parts.length - 1)
-                                                                    || (e.part == 0 && controller.parts.length > 1),
-                                                                connectUpper: iOS ? false : e.part != 0,
+                                                                connectLower: e.part != controller.parts.length - 1 || (newerMessage != null && message.connectToLower(newerMessage!)),
+                                                                connectUpper: e.part != 0 || message.connectToUpper(),
                                                               ),
                                                               child: Stack(
                                                                 alignment: Alignment.centerRight,
@@ -505,7 +500,7 @@ class _MessageHolderState extends CustomState<MessageHolder, void, MessageWidget
                                                                             decoration: BoxDecoration(
                                                                               color: !message.isBigEmoji
                                                                                   ? context.theme.colorScheme.primary
-                                                                                  : context.theme.colorScheme.background,
+                                                                                  : context.theme.colorScheme.surface,
                                                                             ),
                                                                             constraints: BoxConstraints(
                                                                               maxWidth: ns.width(context) * MessageWidgetController.maxBubbleSizeFactor - 40,
@@ -665,12 +660,10 @@ class _MessageHolderState extends CustomState<MessageHolder, void, MessageWidget
                                                             );
 
                                                             return message.dateScheduled != null ? DottedBorder(
-                                                              customPath: (size) => TailClipper(
+                                                              customPath: (size) => ExpressiveClipper(
                                                                 isFromMe: message.isFromMe!,
-                                                                showTail: message.showTail(newerMessage) && e.part == controller.parts.length - 1,
-                                                                connectLower: iOS ? false : (e.part != 0 && e.part != controller.parts.length - 1)
-                                                                    || (e.part == 0 && controller.parts.length > 1),
-                                                                connectUpper: iOS ? false : e.part != 0,
+                                                                connectLower: e.part != controller.parts.length - 1 || (newerMessage != null && message.connectToLower(newerMessage!)),
+                                                                connectUpper: e.part != 0 || message.connectToUpper(),
                                                               ).getClip(size),
                                                               color: context.theme.colorScheme.primaryContainer,
                                                               strokeWidth: 2,

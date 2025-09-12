@@ -341,7 +341,7 @@ class SetupViewController extends StatefulController {
     T result;
     try {
       result = await inner;
-    } catch (e, s) {
+    } catch (e) {
       Get.back();
       showSnackbar("Failure! Please try again", e.toString());
       rethrow;
@@ -708,7 +708,7 @@ class _SetupViewState extends OptimizedState<SetupView> {
     return PopScope(
       canPop: false,
       child: Scaffold(
-        backgroundColor: ss.settings.windowEffect.value != WindowEffect.disabled ? Colors.transparent : context.theme.colorScheme.background,
+        backgroundColor: ss.settings.windowEffect.value != WindowEffect.disabled ? Colors.transparent : context.theme.colorScheme.surface,
         body: SafeArea(
           child: Column(
             children: <Widget>[

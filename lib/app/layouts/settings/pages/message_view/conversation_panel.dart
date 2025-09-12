@@ -254,7 +254,7 @@ class _ConversationPanelState extends OptimizedState<ConversationPanel> {
                             ss.settings.receiveSoundPath.value = path2;
                             ss.saveSettings();
                             Get.back();
-                          } catch (e, s) {
+                          } catch (e) {
                             Get.back();
                             showSnackbar("Error", "Failed to fetch audio");
                             rethrow;

@@ -200,7 +200,7 @@ class FaceTimeCreatorState extends OptimizedState<FaceTimeCreator> {
       value: SystemUiOverlayStyle(
         systemNavigationBarColor: ss.settings.immersiveMode.value
             ? Colors.transparent
-            : context.theme.colorScheme.background, // navigation bar color
+            : context.theme.colorScheme.surface, // navigation bar color
         systemNavigationBarIconBrightness: context.theme.colorScheme.brightness.opposite,
         statusBarColor: Colors.transparent, // status bar color
         statusBarIconBrightness: context.theme.colorScheme.brightness.opposite,
@@ -208,7 +208,7 @@ class FaceTimeCreatorState extends OptimizedState<FaceTimeCreator> {
       child: Scaffold(
         backgroundColor: ss.settings.windowEffect.value != WindowEffect.disabled
             ? Colors.transparent
-            : context.theme.colorScheme.background,
+            : context.theme.colorScheme.surface,
         appBar: PreferredSize(
           preferredSize: Size(ns.width(context), kIsDesktop ? 90 : 50),
           child: AppBar(
@@ -430,7 +430,9 @@ class FaceTimeCreatorState extends OptimizedState<FaceTimeCreator> {
                                                 child: InkWell(
                                                   onTap: () {
                                                     if (selectedContacts.firstWhereOrNull((c) => c.address == e) !=
-                                                        null) return;
+                                                        null) {
+                                                      return;
+                                                    }
                                                     addSelected(
                                                         SelectedContact(displayName: contact.displayName, address: e));
                                                   },
@@ -447,7 +449,9 @@ class FaceTimeCreatorState extends OptimizedState<FaceTimeCreator> {
                                                 child: InkWell(
                                                   onTap: () {
                                                     if (selectedContacts.firstWhereOrNull((c) => c.address == e) !=
-                                                        null) return;
+                                                        null) {
+                                                      return;
+                                                    }
                                                     addSelected(
                                                         SelectedContact(displayName: contact.displayName, address: e));
                                                   },

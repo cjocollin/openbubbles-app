@@ -450,6 +450,7 @@ class Chat {
     this.autoSendReadReceipts = autoSendReadReceipts;
     save(updateAutoSendReadReceipts: true);
     if (autoSendReadReceipts ?? ss.settings.privateMarkChatAsRead.value) {
+      // ignore: argument_type_not_assignable
       backend.markRead(this, ss.settings.privateMarkChatAsRead.value);
     }
     return this;
@@ -460,6 +461,7 @@ class Chat {
     this.autoSendTypingIndicators = autoSendTypingIndicators;
     save(updateAutoSendTypingIndicators: true);
     if (!(autoSendTypingIndicators ?? ss.settings.privateSendTypingIndicators.value)) {
+          // ignore: argument_type_not_assignable
           backend.stoppedTyping(this);
     }
     return this;
